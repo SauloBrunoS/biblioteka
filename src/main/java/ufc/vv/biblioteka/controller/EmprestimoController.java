@@ -43,8 +43,16 @@ public class EmprestimoController {
     }
 
     @PostMapping("/devolver")
-    public ResponseEntity<Emprestimo> devolverLivro(@RequestParam int emprestimoId) {
-        Emprestimo emprestimo = emprestimoService.devolverLivro(emprestimoId);
-        return ResponseEntity.ok(emprestimo);
+    public ResponseEntity<?> devolverLivro(@RequestParam int emprestimoId) {
+        try {
+            Emprestimo emprestimo = emprestimoService.devolverLivro(emprestimoId);
+            return ResponseEntity.ok(emprestimo);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro inesperado ao devolver livro.");
+        }
     }
 }

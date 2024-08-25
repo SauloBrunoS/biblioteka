@@ -1,6 +1,5 @@
 package ufc.vv.biblioteka.controller;
 
-import org.hibernate.mapping.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,6 +20,7 @@ import ufc.vv.biblioteka.model.Colecao;
 import ufc.vv.biblioteka.model.Emprestimo;
 import ufc.vv.biblioteka.model.Livro;
 import ufc.vv.biblioteka.model.Reserva;
+import ufc.vv.biblioteka.model.StatusReserva;
 import ufc.vv.biblioteka.repository.EmprestimoRepository;
 import ufc.vv.biblioteka.repository.LivroRepository;
 import ufc.vv.biblioteka.repository.ReservaRepository;
@@ -106,14 +106,16 @@ public class LivroController {
     }
 
     @GetMapping("/{id}/reservas")
-    public ResponseEntity<Page<Reserva>> buscarReservasPorLivroId(@PathVariable int id, Pageable pageable) {
-        Page<Reserva> reservas = reservaRepository.findByLivroId(id, pageable);
+    public ResponseEntity<Page<Reserva>> buscarReservasPorLivroId(@PathVariable int id, String search,
+            StatusReserva status, Pageable pageable) {
+        Page<Reserva> reservas = reservaRepository.findByLivroIdAndSearch(id, search, status, pageable);
         return ResponseEntity.ok(reservas);
     }
 
     @GetMapping("/{id}/emprestimos")
-    public ResponseEntity<Page<Emprestimo>> buscarEmprestimosPorLivroId(@PathVariable int id, Pageable pageable) {
-        Page<Emprestimo> emprestimos = emprestimoRepository.findByLivroId(id, pageable);
+    public ResponseEntity<Page<Emprestimo>> buscarEmprestimosPorLivroId(@PathVariable int id, String search,
+            boolean devolvido, Pageable pageable) {
+        Page<Emprestimo> emprestimos = emprestimoRepository.findByLivroIdAndSearch(id, search, devolvido, pageable);
         return ResponseEntity.ok(emprestimos);
     }
 

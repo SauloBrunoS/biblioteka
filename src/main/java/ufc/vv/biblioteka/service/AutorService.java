@@ -1,6 +1,6 @@
 package ufc.vv.biblioteka.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +47,7 @@ public class AutorService {
 
         // Verifica se o autor tem livros associados
         if (autor.getLivros() != null && !autor.getLivros().isEmpty()) {
-            throw new IllegalStateException("Não é possível excluir o autor porque ele tem livros associados.");
+            throw new DataIntegrityViolationException("Não é possível excluir o autor porque ele tem livros associados.");
         }
 
         autorRepository.delete(autor);

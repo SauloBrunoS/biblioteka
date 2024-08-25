@@ -33,7 +33,6 @@ public class EmprestimoService {
 
     private ReservaRepository reservaRepository;
 
-
     @Autowired
     public EmprestimoService(EmprestimoRepository emprestimoRepository,
             LivroRepository livroRepository,
@@ -43,8 +42,6 @@ public class EmprestimoService {
         this.leitorRepository = leitorRepository;
         this.reservaRepository = reservaRepository;
     }
-
-    private static final int DATA_LIMITE_PRAZO_DEVOLUCAO_EM_DIAS = 15;
 
     @Transactional
     public Emprestimo emprestarLivro(int livroId, int leitorId) {
@@ -70,7 +67,7 @@ public class EmprestimoService {
         }
 
         // Verificar limite de empréstimos do leitor
-        if (leitor.getLimiteEmprestimos() == 0) {
+        if (leitor.getQuantidadeEmprestimosRestantes() == 0) {
             throw new LimiteExcedidoException("Limite de empréstimos excedido para o leitor");
         }
 
@@ -83,9 +80,7 @@ public class EmprestimoService {
         emprestimo.setLeitor(leitor);
         emprestimo.setDataEmprestimo(LocalDate.now());
         emprestimo.setDevolvido(false);
-
-        emprestimo.setDataLimite(LocalDate.now().plusDays(DATA_LIMITE_PRAZO_DEVOLUCAO_EM_DIAS));
-
+        emprestimo.setDataLimite(LocalDate.now());
         return emprestimoRepository.save(emprestimo);
     }
 

@@ -24,12 +24,17 @@ import org.springframework.data.domain.Page;
 @RepositoryRestController("/leitores")
 public class LeitorController {
 
-    @Autowired
     private LeitorService leitorService;
-    @Autowired
     private LeitorRepository leitorRepository;
-    @Autowired
     private EmprestimoRepository emprestimoRepository;
+
+    @Autowired
+    public LeitorController(LeitorService leitorService, LeitorRepository leitorRepository,
+            EmprestimoRepository emprestimoRepository) {
+        this.leitorRepository = leitorRepository;
+        this.leitorService = leitorService;
+        this.emprestimoRepository = emprestimoRepository;
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Leitor> getLeitorById(@PathVariable int id) {

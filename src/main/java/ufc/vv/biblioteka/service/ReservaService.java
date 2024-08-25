@@ -6,21 +6,20 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import ufc.vv.biblioteka.exception.LimiteExcedidoException;
-import ufc.vv.biblioteka.exception.LivroIndisponivelException;
+import ufc.vv.biblioteka.exception.ReservaNaoPodeMaisSerCancelaException;
 import ufc.vv.biblioteka.model.Leitor;
 import ufc.vv.biblioteka.model.Livro;
 import ufc.vv.biblioteka.model.Reserva;
 import ufc.vv.biblioteka.model.StatusReserva;
-import ufc.vv.biblioteka.repository.EmprestimoRepository;
 import ufc.vv.biblioteka.repository.LeitorRepository;
 import ufc.vv.biblioteka.repository.LivroRepository;
 import ufc.vv.biblioteka.repository.ReservaRepository;
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Optional;
 
 @Service
 public class ReservaService {
-
-    private EmprestimoRepository emprestimoRepository;
 
     private LivroRepository livroRepository;
 
@@ -29,10 +28,8 @@ public class ReservaService {
     private ReservaRepository reservaRepository;
 
     @Autowired
-    public ReservaService(EmprestimoRepository emprestimoRepository,
-            LivroRepository livroRepository,
+    public ReservaService(LivroRepository livroRepository,
             LeitorRepository leitorRepository, ReservaRepository reservaRepository) {
-        this.emprestimoRepository = emprestimoRepository;
         this.livroRepository = livroRepository;
         this.leitorRepository = leitorRepository;
         this.reservaRepository = reservaRepository;
@@ -47,7 +44,7 @@ public class ReservaService {
                 .orElseThrow(() -> new EntityNotFoundException("Leitor não encontrado"));
 
         // Verificar limite de empréstimos do leitor
-        if (leitor.getLimiteReservas() == 0) {
+        if (leitor.getQuantidadeReservasRestantes() == 0) {
             throw new LimiteExcedidoException("Limite de reservas excedido para o leitor");
         }
 
@@ -60,7 +57,7 @@ public class ReservaService {
         reserva.setLivro(livro);
         reserva.setLeitor(leitor);
         reserva.setDataCadastro(LocalDate.now());
-       
+
         if (reservasEmAndamento < livro.getNumeroCopias()) {
             reserva.marcarComoEmAndamento();
         } else {
@@ -70,32 +67,34 @@ public class ReservaService {
         livro.emprestarLivro();
         livroRepository.save(livro);
 
-        return emprestimoRepository.save(emprestimo);
+        return reservaRepository.save(reserva);
     }
 
     @Transactional
-    public Emprestimo devolverLivro(int emprestimoId) {
-        Emprestimo emprestimo = emprestimoRepository.findById(emprestimoId)
-                .orElseThrow(() -> new EntityNotFoundException("Empréstimo não encontrado"));
+    public Reserva cancelarReserva(int reservaId) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva não encontrada"));
 
-        emprestimo.setDataDevolucao(LocalDate.now());
-        emprestimoRepository.save(emprestimo);
+        if (reserva.getStatus() != StatusReserva.EM_ESPERA && reserva.getStatus() != StatusReserva.EM_ANDAMENTO) {
+            throw new ReservaNaoPodeMaisSerCancelaException("Esta reserva não pode mais ser cancelada");
+        }
 
-        Livro livro = emprestimo.getLivro();
-        livro.devolverLivro();
-        livroRepository.save(livro);
+        reserva.setStatus(StatusReserva.CANCELADA);
 
-        // Verificar se há reservas em espera
+        Livro livro = reserva.getLivro();
         Optional<Reserva> reservaEmEsperaMaisAntiga = livro.getReservas().stream()
-                .filter(reserva -> reserva.getStatus() == StatusReserva.EM_ESPERA)
+                .filter(reservaLivro -> reservaLivro.getStatus() == StatusReserva.EM_ESPERA)
                 .min(Comparator.comparing(Reserva::getDataCadastro));
 
         // Se houver uma reserva em espera, atualizar o status e a dataLimite
         if (reservaEmEsperaMaisAntiga.isPresent()) {
-            Reserva reserva = reservaEmEsperaMaisAntiga.get();
-            reserva.marcarComoEmAndamento();
-            reservaRepository.save(reserva);
+            Reserva reservaEmEspera = reservaEmEsperaMaisAntiga.get();
+            reservaEmEspera.marcarComoEmAndamento();
+            reservaRepository.save(reservaEmEspera);
         }
 
-        return emprestimo;
+        reservaRepository.save(reserva);
+
+        return reserva;
     }
+}

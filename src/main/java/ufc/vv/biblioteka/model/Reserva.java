@@ -52,6 +52,13 @@ public class Reserva {
         this.status = StatusReserva.EM_ANDAMENTO;
         this.dataLimite = LocalDate.now().plusDays(PRAZO_RESERVA_ATIVA_EM_DIAS);
     }
-    
+
+    public void marcarComoEmEspera() {
+        this.status = StatusReserva.EM_ESPERA;
+    }
+
+    public void marcarComoCancelada() {
+        this.status = StatusReserva.CANCELADA;
+    }
 
 }

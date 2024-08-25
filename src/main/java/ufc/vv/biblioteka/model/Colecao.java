@@ -10,7 +10,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import jakarta.persistence.JoinColumn;
 
 import java.util.List;
@@ -31,6 +30,10 @@ public class Colecao {
     @NotBlank
     @Column(unique = true)
     private String nome;
+
+    @NotNull
+    @NotBlank
+    private String descricao;
 
     @ManyToMany
     @JoinTable(name = "colecao_livro", joinColumns = @JoinColumn(name = "colecao_id"), inverseJoinColumns = @JoinColumn(name = "livro_id"))

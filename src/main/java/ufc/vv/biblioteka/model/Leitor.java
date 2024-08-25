@@ -60,11 +60,13 @@ public class Leitor {
                 .count();
     }
 
-    public int getLimiteEmprestimos() {
+    public int getQuantidadeEmprestimosRestantes() {
         int qtdEmprestimosNaoDevolvidos = getQuantidadeEmprestimosNaoDevolvidos();
         int emprestimosRestantes = LIMITE_EMPRESTIMOS - qtdEmprestimosNaoDevolvidos;
-        if(emprestimosRestantes < 0)  throw new IllegalStateException("Limite de emprestimos não pode ser menor que quantidade de empréstimos não devolvidos");
-        return LIMITE_EMPRESTIMOS - qtdEmprestimosNaoDevolvidos;
+        if (emprestimosRestantes < 0)
+            throw new IllegalStateException(
+                    "Limite de emprestimos não pode ser menor que quantidade de empréstimos não devolvidos");
+        return emprestimosRestantes;
     }
 
     public int getQuantidadeReservasEmAndamento() {
@@ -75,8 +77,12 @@ public class Leitor {
                 .count();
     }
 
-    public int getLimiteReservas() {
+    public int getQuantidadeReservasRestantes() {
         int qtdReservasEmAndamento = getQuantidadeReservasEmAndamento();
-        return LIMITE_RESERVAS_EM_ANDAMENTO - qtdReservasEmAndamento;
+        int reservasRestantes = LIMITE_RESERVAS_EM_ANDAMENTO - qtdReservasEmAndamento;
+        if (reservasRestantes < 0)
+            throw new IllegalStateException(
+                    "Limite de reservas em andamento não pode ser menor que quantidade de reservas em andamento");
+        return reservasRestantes;
     }
 }
