@@ -20,7 +20,7 @@ public class AutorService {
     public Autor createAutor(Autor autor) {
         validarAutor(autor);
 
-        if (autorRepository.existsByNome(autor.getNomeCompleto())) {
+        if (autorRepository.existsByNomeCompleto(autor.getNomeCompleto())) {
             throw new DuplicateKeyException("Um autor com este nome já está cadastrado.");
         }
 
@@ -35,7 +35,6 @@ public class AutorService {
 
         existingAutor.setDataNascimento(updatedAutor.getDataNascimento());
         existingAutor.setNacionalidade(updatedAutor.getNacionalidade());
-        existingAutor.setBiografia(updatedAutor.getBiografia());
         existingAutor.setNomeCompleto(updatedAutor.getNomeCompleto());
 
         return autorRepository.save(existingAutor);
@@ -60,8 +59,7 @@ public class AutorService {
         if (autor.getNomeCompleto() == null || autor.getNomeCompleto().isEmpty() ||
                 autor.getDataNascimento() == null ||
                 // talvez não precise de empty
-                autor.getNacionalidade() == null || autor.getNacionalidade().toString().isEmpty() ||
-                autor.getBiografia() == null || autor.getBiografia().isEmpty()) {
+                autor.getNacionalidade() == null || autor.getNacionalidade().toString().isEmpty()) {
             throw new IllegalArgumentException("Todos os campos obrigatórios devem ser preenchidos.");
         }
     }

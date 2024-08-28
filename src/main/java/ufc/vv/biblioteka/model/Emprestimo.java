@@ -22,6 +22,7 @@ import lombok.Data;
 public class Emprestimo {
 
     private static final int DATA_LIMITE_PRAZO_DEVOLUCAO_EM_DIAS = 15;
+    private static final int LIMITE_RENOVACOES_SEGUIDAS_DE_UM_MESMO_LIVRO = 3;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,6 +51,8 @@ public class Emprestimo {
 
     private double valorBase;
 
+    private int quantidadeRenovacoes;
+
     private double multa;
 
     public void setDataDevolucao(LocalDate dataDevolucao) {
@@ -69,5 +72,17 @@ public class Emprestimo {
         if (dataLimite == null)
             throw new IllegalArgumentException("Data de hoje não pode ser nula");
         this.dataLimite = dataAtual.plusDays(DATA_LIMITE_PRAZO_DEVOLUCAO_EM_DIAS);
+    }
+
+    public int getQuantidadeRenovacoesRestantes() {
+        int qtdRenovacoesRestantes = LIMITE_RENOVACOES_SEGUIDAS_DE_UM_MESMO_LIVRO - quantidadeRenovacoes;
+        if (qtdRenovacoesRestantes < 0)
+            throw new IllegalStateException("O limite de renovações não pode ser menor que a quantidade de renovações");
+        return qtdRenovacoesRestantes;
+    }
+
+    public void renovar() {
+        quantidadeRenovacoes++;
+        dataLimite = LocalDate.now();
     }
 }

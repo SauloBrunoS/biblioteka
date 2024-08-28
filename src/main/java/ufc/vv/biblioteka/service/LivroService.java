@@ -83,8 +83,12 @@ public class LivroService {
             throw new IllegalArgumentException("A data de publicação não pode ser uma data futura.");
         }
 
-        if (livro.getNumeroCopias() < 0) {
-            throw new IllegalArgumentException("Número de cópias não pode ser negativo.");
+        if (livro.getNumeroCopiasDisponiveis() < 0) {
+            throw new IllegalArgumentException("Número de cópias disponíves não pode ser negativo.");
+        }
+
+        if (livro.getNumeroCopiasTotais() < 0) {
+            throw new IllegalArgumentException("Número de cópias totais não pode ser negativo.");
         }
 
         if (livro.getQtdPaginas() < 0) {

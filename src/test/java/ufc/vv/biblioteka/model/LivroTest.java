@@ -11,17 +11,17 @@ class LivroTest {
     @Test
     void testaEmprestarLivroComSucesso() {
         Livro livro = new Livro();
-        livro.setNumeroCopias(5);
+        livro.setNumeroCopiasDisponiveis(5);
 
         livro.emprestarLivro();
 
-        assertEquals(4, livro.getNumeroCopias());
+        assertEquals(4, livro.getNumeroCopiasDisponiveis());
     }
 
     @Test
     void testarEmprestarLivroSemCopiasDisponiveis() {
         Livro livro = new Livro();
-        livro.setNumeroCopias(0);
+        livro.setNumeroCopiasDisponiveis(0);
 
         assertThrows(LivroIndisponivelException.class, livro::emprestarLivro);
     }
@@ -29,7 +29,7 @@ class LivroTest {
     @Test
     void testar() {
         Livro livro = new Livro();
-        livro.setNumeroCopias(0);
+        livro.setNumeroCopiasDisponiveis(0);
 
         assertThrows(LivroIndisponivelException.class, livro::emprestarLivro);
     }
@@ -39,7 +39,7 @@ class LivroTest {
         Livro livro = new Livro();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            livro.setNumeroCopias(-5);
+            livro.setNumeroCopiasDisponiveis(-5);
         });
 
         // Verifica se a mensagem da exceção é a esperada

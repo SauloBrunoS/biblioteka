@@ -1,7 +1,7 @@
 package ufc.vv.biblioteka.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.persistence.EntityNotFoundException;
 import ufc.vv.biblioteka.model.Colecao;
+import ufc.vv.biblioteka.model.Livro;
 import ufc.vv.biblioteka.repository.ColecaoRepository;
+import ufc.vv.biblioteka.repository.LivroRepository;
 import ufc.vv.biblioteka.service.ColecaoService;
 
 @RepositoryRestController("/colecoes")
@@ -26,12 +28,16 @@ public class ColecaoController {
 
     private ColecaoRepository colecaoRepository;
 
+    private LivroRepository livroRepository;
+
     private ColecaoService colecaoService;
 
     @Autowired
-    public ColecaoController(ColecaoRepository colecaoRepository, ColecaoService colecaoService) {
+    public ColecaoController(ColecaoRepository colecaoRepository, ColecaoService colecaoService,
+            LivroRepository livroRepository) {
         this.colecaoRepository = colecaoRepository;
         this.colecaoService = colecaoService;
+        this.livroRepository = livroRepository;
     }
 
     @GetMapping("/{id}")
@@ -91,4 +97,12 @@ public class ColecaoController {
         return ResponseEntity.ok(colecoes);
     }
 
+    @GetMapping("{id}/livros")
+    public ResponseEntity<Page<Livro>> buscarLivrosPorColecaoId(@PathVariable("id") int idColecao,
+            @RequestParam String search, Pageable pageable) {
+        Colecao colecao = colecaoRepository.findById(idColecao)
+                .orElseThrow(() -> new EntityNotFoundException("Coleção não encontrada"));
+        Page<Livro> livros = livroRepository.findByAllFields(search, colecao, pageable);
+        return ResponseEntity.ok(livros);
+    }
 }

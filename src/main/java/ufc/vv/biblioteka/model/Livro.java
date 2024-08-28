@@ -58,7 +58,9 @@ public class Livro {
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataPublicacao;
 
-    private int numeroCopias;
+    private int numeroCopiasDisponiveis;
+
+    private int numeroCopiasTotais;
 
     private int qtdPaginas;
 
@@ -73,17 +75,17 @@ public class Livro {
     private List<Colecao> colecoes;
 
     public void emprestarLivro() {
-        if (numeroCopias > 0) {
-            numeroCopias--;
+        if (numeroCopiasDisponiveis > 0) {
+            numeroCopiasDisponiveis--;
         } else {
             throw new LivroIndisponivelException("O livro não está disponível para empréstimo.");
         }
     }
 
     public void devolverLivro() {
-        if (numeroCopias < 0) {
+        if (numeroCopiasDisponiveis < 0) {
             throw new IllegalArgumentException("O número de cópias não pode ser negativo");
         }
-        numeroCopias++;
+        numeroCopiasDisponiveis++;
     }
 }

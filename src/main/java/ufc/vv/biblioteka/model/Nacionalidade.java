@@ -77,6 +77,7 @@ public enum Nacionalidade {
     ILHAS_SOLAMOES("Ilhas Solamões"),
     ILHAS_VIRGENS("Ilhas Virgens"),
     INDONESIA("Indonésia"),
+    INGLATERRA("Inglaterra"),
     IRA("Irã"),
     IRAQUE("Iraque"),
     IRLANDA("Irlanda"),

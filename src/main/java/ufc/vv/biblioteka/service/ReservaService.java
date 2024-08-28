@@ -1,6 +1,8 @@
 package ufc.vv.biblioteka.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -16,6 +18,7 @@ import ufc.vv.biblioteka.repository.LivroRepository;
 import ufc.vv.biblioteka.repository.ReservaRepository;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,21 +30,38 @@ public class ReservaService {
 
     private ReservaRepository reservaRepository;
 
+    private UsuarioService usuarioService;
+
     @Autowired
     public ReservaService(LivroRepository livroRepository,
-            LeitorRepository leitorRepository, ReservaRepository reservaRepository) {
+            LeitorRepository leitorRepository, UsuarioService usuarioService,
+            ReservaRepository reservaRepository) {
         this.livroRepository = livroRepository;
         this.leitorRepository = leitorRepository;
         this.reservaRepository = reservaRepository;
+        this.usuarioService = usuarioService;
     }
 
     @Transactional
-    public Reserva reservarLivro(int livroId, int leitorId) {
+    public Reserva reservarLivro(int livroId, int leitorId, String senha) {
         Livro livro = livroRepository.findById(livroId)
                 .orElseThrow(() -> new EntityNotFoundException("Livro não encontrado"));
 
         Leitor leitor = leitorRepository.findById(leitorId)
                 .orElseThrow(() -> new EntityNotFoundException("Leitor não encontrado"));
+
+        if (!usuarioService.verificarSenha(leitor.getUsuario().getId(), senha)) {
+            throw new AccessDeniedException("Senha incorreta");
+        }
+
+        // Verificar se o leitor já possui uma reserva em andamento para este livro
+        boolean reservaExistente = livro.getReservas().stream()
+                .anyMatch(reserva -> reserva.getLeitor().getId() == leitorId &&
+                        reserva.getStatus() == StatusReserva.EM_ANDAMENTO);
+
+        if (reservaExistente) {
+            throw new IllegalStateException("Leitor já possui uma reserva em andamento para este livro");
+        }
 
         // Verificar limite de empréstimos do leitor
         if (leitor.getQuantidadeReservasRestantes() == 0) {
@@ -58,7 +78,7 @@ public class ReservaService {
         reserva.setLeitor(leitor);
         reserva.setDataCadastro(LocalDate.now());
 
-        if (reservasEmAndamento < livro.getNumeroCopias()) {
+        if (reservasEmAndamento < livro.getNumeroCopiasDisponiveis()) {
             reserva.marcarComoEmAndamento();
         } else {
             reserva.marcarComoEmEspera();
@@ -71,9 +91,13 @@ public class ReservaService {
     }
 
     @Transactional
-    public Reserva cancelarReserva(int reservaId) {
+    public Reserva cancelarReserva(int reservaId, String senha) {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new EntityNotFoundException("Reserva não encontrada"));
+
+        if (!usuarioService.verificarSenha(reserva.getLeitor().getUsuario().getId(), senha)) {
+            throw new AccessDeniedException("Senha incorreta");
+        }
 
         if (reserva.getStatus() != StatusReserva.EM_ESPERA && reserva.getStatus() != StatusReserva.EM_ANDAMENTO) {
             throw new ReservaNaoPodeMaisSerCancelaException("Esta reserva não pode mais ser cancelada");
@@ -97,4 +121,32 @@ public class ReservaService {
 
         return reserva;
     }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void atualizarReservasExpiradas() {
+        LocalDate ontem = LocalDate.now().minusDays(1);
+
+        // Buscar todas as reservas em andamento cuja data limite foi ontem
+        List<Reserva> reservasExpiradas = reservaRepository.findByStatusAndDataLimite(
+                StatusReserva.EM_ANDAMENTO, ontem);
+
+        // Expirar as reservas em andamento que passaram da data limite
+        reservasExpiradas.forEach(reserva -> reserva.setStatus(StatusReserva.EXPIRADA));
+        reservaRepository.saveAll(reservasExpiradas);
+
+        // Para cada reserva expirada, tentar ativar uma reserva em espera
+        reservasExpiradas.forEach(reservaExpirada -> {
+            Livro livro = reservaExpirada.getLivro();
+            Optional<Reserva> reservaEmEsperaMaisAntiga = livro.getReservas().stream()
+                    .filter(reserva -> reserva.getStatus() == StatusReserva.EM_ESPERA)
+                    .min(Comparator.comparing(Reserva::getDataCadastro));
+
+            reservaEmEsperaMaisAntiga.ifPresent(reserva -> {
+                reserva.marcarComoEmAndamento();
+                reservaRepository.save(reserva);
+            });
+        });
+    }
+
 }

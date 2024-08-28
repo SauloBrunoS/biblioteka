@@ -269,6 +269,17 @@
 				1.7
 			</version>
 		</dependency>
+		<dependency>
+			<groupId>
+				br.com.colman.simplecpfvalidator
+			</groupId>
+			<artifactId>
+				simple-cpf-validator
+			</artifactId>
+			<version>
+				2.6.0
+			</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

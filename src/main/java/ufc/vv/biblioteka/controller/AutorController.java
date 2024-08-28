@@ -1,7 +1,7 @@
 package ufc.vv.biblioteka.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
@@ -101,7 +101,7 @@ public class AutorController {
 
     @GetMapping("/{id}/livros")
     public ResponseEntity<Page<Livro>> getLivrosByAutor(@PathVariable int id, Pageable pageable) {
-        Page<Livro> livros = livroRepository.findByAutorId(id, pageable);
+        Page<Livro> livros = livroRepository.findByAutoresId(id, pageable);
         return ResponseEntity.ok(livros);
     }
 }

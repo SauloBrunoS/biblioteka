@@ -24,9 +24,9 @@ public class ReservaController {
     }
 
     @PostMapping("/reservar")
-    public ResponseEntity<?> reservarLivro(@RequestParam int livroId, @RequestParam int leitorId) {
+    public ResponseEntity<?> reservarLivro(@RequestParam int livroId, @RequestParam int leitorId, @RequestParam String senha) {
         try {
-            Reserva reserva = reservaService.reservarLivro(livroId, leitorId);
+            Reserva reserva = reservaService.reservarLivro(livroId, leitorId, senha);
             return ResponseEntity.ok(reserva);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -40,9 +40,9 @@ public class ReservaController {
     }
 
     @PostMapping("/cancelar")
-    public ResponseEntity<?> cancelarReserva(@RequestParam int reservaId) {
+    public ResponseEntity<?> cancelarReserva(@RequestParam int reservaId, @RequestParam String senha) {
         try {
-            Reserva reserva = reservaService.cancelarReserva(reservaId);
+            Reserva reserva = reservaService.cancelarReserva(reservaId, senha);
             return ResponseEntity.ok(reserva);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

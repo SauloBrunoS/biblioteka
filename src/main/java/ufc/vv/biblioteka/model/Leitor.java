@@ -42,6 +42,10 @@ public class Leitor {
     @NotBlank
     private String telefone;
 
+    @NotNull
+    @NotBlank
+    private String cpf;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "usuario_id", referencedColumnName = "id")
     private Usuario usuario;

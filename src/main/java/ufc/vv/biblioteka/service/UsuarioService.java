@@ -1,18 +1,23 @@
 package ufc.vv.biblioteka.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import ufc.vv.biblioteka.model.Usuario;
 import ufc.vv.biblioteka.repository.UsuarioRepository;
 
+@Service
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private UsuarioRepository usuarioRepository;
+    private BCryptPasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, BCryptPasswordEncoder passwordEncoder) {
+    @Autowired
+    public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public Usuario save(Usuario usuario) {
@@ -21,15 +26,10 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public String login(String email, String rawPassword) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    public boolean verificarSenha(int idUsuario, String rawPassword) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        if (passwordEncoder.matches(rawPassword, usuario.getSenha())) {
-            // Gerar e retornar um JWT
-            return generateToken(usuario);
-        } else {
-            throw new RuntimeException("Credenciais inválidas");
-        }
+        return passwordEncoder.matches(rawPassword, usuario.getSenha());
     }
 }

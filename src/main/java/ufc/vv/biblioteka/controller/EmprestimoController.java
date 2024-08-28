@@ -24,9 +24,9 @@ public class EmprestimoController {
     }
 
     @PostMapping("/emprestar")
-    public ResponseEntity<?> emprestarLivro(@RequestParam int livroId, @RequestParam int leitorId) {
+    public ResponseEntity<?> emprestarLivro(@RequestParam int livroId, @RequestParam int leitorId, @RequestParam String senha ) {
         try {
-            Emprestimo emprestimo = emprestimoService.emprestarLivro(livroId, leitorId);
+            Emprestimo emprestimo = emprestimoService.emprestarLivro(livroId, leitorId, senha);
             return ResponseEntity.ok(emprestimo);
         } catch (LivroIndisponivelException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
@@ -43,9 +43,9 @@ public class EmprestimoController {
     }
 
     @PostMapping("/devolver")
-    public ResponseEntity<?> devolverLivro(@RequestParam int emprestimoId) {
+    public ResponseEntity<?> devolverLivro(@RequestParam int emprestimoId, @RequestParam String senha) {
         try {
-            Emprestimo emprestimo = emprestimoService.devolverLivro(emprestimoId);
+            Emprestimo emprestimo = emprestimoService.devolverLivro(emprestimoId, senha);
             return ResponseEntity.ok(emprestimo);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

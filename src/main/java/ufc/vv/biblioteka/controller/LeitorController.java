@@ -1,9 +1,11 @@
 package ufc.vv.biblioteka.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
-
+import org.springframework.data.domain.Pageable;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,12 +15,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import jakarta.persistence.EntityNotFoundException;
 import ufc.vv.biblioteka.model.Emprestimo;
 import ufc.vv.biblioteka.model.Leitor;
+import ufc.vv.biblioteka.model.Reserva;
+import ufc.vv.biblioteka.model.StatusReserva;
 import ufc.vv.biblioteka.repository.EmprestimoRepository;
 import ufc.vv.biblioteka.repository.LeitorRepository;
+import ufc.vv.biblioteka.repository.ReservaRepository;
 import ufc.vv.biblioteka.service.LeitorService;
-import java.util.List;
+
 import org.springframework.data.domain.Page;
 
 @RepositoryRestController("/leitores")
@@ -27,13 +33,16 @@ public class LeitorController {
     private LeitorService leitorService;
     private LeitorRepository leitorRepository;
     private EmprestimoRepository emprestimoRepository;
+    private ReservaRepository reservaRepository;
 
     @Autowired
     public LeitorController(LeitorService leitorService, LeitorRepository leitorRepository,
-            EmprestimoRepository emprestimoRepository) {
+            EmprestimoRepository emprestimoRepository,
+            ReservaRepository reservaRepository) {
         this.leitorRepository = leitorRepository;
         this.leitorService = leitorService;
         this.emprestimoRepository = emprestimoRepository;
+        this.reservaRepository = reservaRepository;
     }
 
     @GetMapping("/{id}")
@@ -44,24 +53,57 @@ public class LeitorController {
     }
 
     @PostMapping
-    public ResponseEntity<Leitor> criarLeitor(@RequestBody Leitor leitor) {
-        return ResponseEntity.ok(leitorService.criarLeitor(leitor));
+    public ResponseEntity<?> criarLeitor(@RequestBody Leitor leitor) {
+        try {
+            Leitor novoLeitor = leitorService.criarLeitor(leitor);
+            return ResponseEntity.ok(novoLeitor);
+        } catch (DuplicateKeyException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar leitor.");
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Leitor> atualizarLeitor(@PathVariable int id, @RequestBody Leitor leitorAtualizado) {
-        return ResponseEntity.ok(leitorService.atualizarLeitor(id, leitorAtualizado));
+    public ResponseEntity<?> atualizarLeitor(@PathVariable int id, @RequestBody Leitor leitorAtualizado) {
+        try {
+            Leitor leitorAtualizadoResponse = leitorService.atualizarLeitor(id, leitorAtualizado);
+            return ResponseEntity.ok(leitorAtualizadoResponse);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar leitor.");
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirLeitor(@PathVariable int id) {
-        leitorService.excluirLeitor(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> excluirLeitor(@PathVariable int id) {
+        try {
+            leitorService.excluirLeitor(id);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao excluir leitor.");
+        }
     }
 
     @GetMapping("/{leitorId}/emprestimos")
-    public Page<Emprestimo> getEmprestimosPorLeitor(@PathVariable int leitorId, Pageable pageable) {
-        return emprestimoRepository.findByLeitorId(leitorId, pageable);
+    public Page<Emprestimo> getEmprestimosPorLeitorId(@PathVariable int leitorId, String search, boolean devolvido,
+            Pageable pageable) {
+        return emprestimoRepository.findByLeitorIdAndSearch(leitorId, search, devolvido, pageable);
+    }
+
+    @GetMapping("/{leitorId}/reservas")
+    public Page<Reserva> getReservasPorLeitorId(@PathVariable int leitorId, String search, StatusReserva status,
+            Pageable pageable) {
+        return reservaRepository.findByLeitorIdAndSearch(leitorId, search, status, pageable);
     }
 
     @GetMapping("/buscar")
