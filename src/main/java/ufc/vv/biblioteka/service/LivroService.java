@@ -1,13 +1,20 @@
 package ufc.vv.biblioteka.service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.validator.routines.ISBNValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import ufc.vv.biblioteka.model.Autor;
+import ufc.vv.biblioteka.model.Colecao;
 import ufc.vv.biblioteka.model.Livro;
+import ufc.vv.biblioteka.repository.AutorRepository;
+import ufc.vv.biblioteka.repository.ColecaoRepository;
 import ufc.vv.biblioteka.repository.LivroRepository;
 
 @Service
@@ -15,14 +22,31 @@ public class LivroService {
 
     private LivroRepository livroRepository;
 
+    private AutorRepository autorRepository;
+
+    private ColecaoRepository colecaoRepository;
+
     ISBNValidator isbnValidator = new ISBNValidator();
 
-    public LivroService(LivroRepository livroRepository) {
+    @Autowired
+    public LivroService(LivroRepository livroRepository, AutorRepository autorRepository,
+            ColecaoRepository colecaoRepository) {
         this.livroRepository = livroRepository;
+        this.autorRepository = autorRepository;
+        this.colecaoRepository = colecaoRepository;
     }
 
     public Livro adicionarLivro(Livro livro) {
         validarLivro(livro);
+        List<Autor> autores = autorRepository.findAllById(livro.getAutores().stream()
+                .map(Autor::getId)
+                .collect(Collectors.toList()));
+        livro.setAutores(autores);
+
+        List<Colecao> colecoes = colecaoRepository.findAllById(livro.getColecoes().stream()
+                .map(Colecao::getId)
+                .collect(Collectors.toList()));
+        livro.setColecoes(colecoes);
         return livroRepository.save(livro);
     }
 
@@ -32,7 +56,17 @@ public class LivroService {
         }
         validarLivro(livro);
         livro.setId(id);
-        return livroRepository.save(livro);
+        List<Autor> autores = autorRepository.findAllById(livro.getAutores().stream()
+                .map(Autor::getId)
+                .collect(Collectors.toList()));
+        livro.setAutores(autores);
+
+        List<Colecao> colecoes = colecaoRepository.findAllById(livro.getColecoes().stream()
+                .map(Colecao::getId)
+                .collect(Collectors.toList()));
+        livro.setColecoes(colecoes);
+        Livro savedLivro = livroRepository.save(livro);
+        return savedLivro;
     }
 
     public void excluirLivro(int id) {
@@ -67,10 +101,6 @@ public class LivroService {
             throw new IllegalArgumentException("O ISBN do livro não pode ser nulo ou vazio.");
         }
 
-        if (livro.getSinopse() == null || livro.getSinopse().isEmpty()) {
-            throw new IllegalArgumentException("A sinopse do livro não pode ser nula ou vazia.");
-        }
-
         if (!isbnValidator.isValidISBN13(livro.getIsbn()) && !isbnValidator.isValidISBN10(livro.getIsbn())) {
             throw new IllegalArgumentException("O ISBN possui formato inválido.");
         }
@@ -89,6 +119,11 @@ public class LivroService {
 
         if (livro.getNumeroCopiasTotais() < 0) {
             throw new IllegalArgumentException("Número de cópias totais não pode ser negativo.");
+        }
+
+        if (livro.getNumeroCopiasDisponiveis() > livro.getNumeroCopiasTotais()) {
+            throw new IllegalArgumentException(
+                    "Número de cópias totais não pode ser menor que número de cópias disponíveis.");
         }
 
         if (livro.getQtdPaginas() < 0) {

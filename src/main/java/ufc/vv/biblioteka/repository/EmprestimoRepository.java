@@ -10,6 +10,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import ufc.vv.biblioteka.model.Emprestimo;
 import ufc.vv.biblioteka.model.Leitor;
 import ufc.vv.biblioteka.model.Livro;
+
 import java.util.Optional;
 
 @RepositoryRestResource(collectionResourceRel = "emprestimos", path = "emprestimos")
@@ -17,18 +18,20 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Integer>
 
         @Query("SELECT e FROM Emprestimo e WHERE " +
                         "(:search IS NULL OR " +
-                        "TO_CHAR(e.dataEmprestimo, 'DD/MM/YYYY') iLIKE '%'||:search||'%' OR " +
-                        "TO_CHAR(e.dataLimite, 'DD/MM/YYYY') iLIKE '%'||:search||'%' OR " +
-                        "TO_CHAR(e.dataDevolucao, 'DD/MM/YYYY') iLIKE '%'||:search||'%' OR " +
-                        "CAST(e.valorBase AS string) iLIKE '%'||:search||'%' OR " +
-                        "CAST(e.multa AS string) iLIKE '%'||:search||'%' OR " +
-                        "CAST(e.quantidadeRenovacoes AS string) iLIKE '%'||:search||'%' OR " +
-                        "e.livro.isbn iLIKE '%'||:search||'%') " +
+                        "TO_CHAR(e.dataEmprestimo, 'DD/MM/YYYY') ILIKE '%' || :search || '%' OR " +
+                        "TO_CHAR(e.dataLimite, 'DD/MM/YYYY') ILIKE '%' || :search || '%' OR " +
+                        "TO_CHAR(e.dataDevolucao, 'DD/MM/YYYY') ILIKE '%' || :search || '%' OR " +
+                        "CAST(e.valorBase AS string) ILIKE '%' || :search || '%' OR " +
+                        "CAST(e.multa AS string) ILIKE '%' || :search || '%' OR " +
+                        "CAST(e.valorTotal AS string) ILIKE '%' || :search || '%' OR " +
+                        "CAST(e.quantidadeRenovacoes AS string) ILIKE '%' || :search || '%') " +
                         "AND (:devolvido IS NULL OR e.devolvido = :devolvido) " +
+                        "AND (:livroId IS NULL OR e.livro.id = :livroId) " +
                         "AND e.leitor.id = :leitorId")
         Page<Emprestimo> findByLeitorIdAndSearch(
                         @Param("leitorId") int leitorId,
                         @Param("search") String search,
+                        @Param("livroId") Integer livroId,
                         @Param("devolvido") Boolean devolvido,
                         Pageable pageable);
 

@@ -63,9 +63,13 @@ public class EmprestimoService {
             throw new AccessDeniedException("Senha incorreta");
         }
 
+        if (leitor.getQuantidadeEmprestimosRestantes() == 0) {
+            throw new LimiteExcedidoException("Limite de empréstimos excedido para o leitor");
+        }
+
         // Verificar se o leitor já possui um empréstimo não devolvido para este livro
         boolean emprestimoNaoDevolvidoExistente = livro.getEmprestimos().stream()
-                .anyMatch(emprestimo -> emprestimo.getLeitor().getId() == leitorId && !emprestimo.isDevolvido());
+                .anyMatch(emprestimo -> emprestimo.getLeitor().getId() == leitorId && emprestimo.getLivro().getId() == livroId && !emprestimo.isDevolvido());
 
         if (emprestimoNaoDevolvidoExistente) {
             throw new IllegalStateException("Leitor já possui um empréstimo não devolvido para este livro");
@@ -83,11 +87,6 @@ public class EmprestimoService {
             reserva.setStatus(StatusReserva.ATENDIDA);
             reservaRepository.save(reserva);
 
-            // Garantir o empréstimo ao leitor
-            if (leitor.getQuantidadeEmprestimosRestantes() == 0) {
-                throw new LimiteExcedidoException("Limite de empréstimos excedido para o leitor");
-            }
-
             livro.emprestarLivro();
             livroRepository.save(livro);
 
@@ -98,6 +97,12 @@ public class EmprestimoService {
             emprestimo.setDataEmprestimo(LocalDate.now());
             emprestimo.setDevolvido(false);
             emprestimo.setDataLimite(LocalDate.now());
+            emprestimo.setMulta(0);
+            emprestimo.setValorBase(0);
+            emprestimo.setQuantidadeRenovacoes(0);
+            emprestimo.setReserva(reserva);
+            emprestimo.setValorTotal(0);
+
             return emprestimoRepository.save(emprestimo);
 
         } else {
@@ -133,7 +138,11 @@ public class EmprestimoService {
             emprestimo.setLeitor(leitor);
             emprestimo.setDataEmprestimo(LocalDate.now());
             emprestimo.setDevolvido(false);
-            emprestimo.setDataLimite(LocalDate.now().plusDays(14)); // Define a data limite do empréstimo (ex: 14 dias)
+            emprestimo.setDataLimite(LocalDate.now());
+            emprestimo.setMulta(0);
+            emprestimo.setValorBase(0);
+            emprestimo.setQuantidadeRenovacoes(0);
+            emprestimo.setValorTotal(0);
             return emprestimoRepository.save(emprestimo);
         }
     }

@@ -95,15 +95,21 @@ public class LeitorController {
     }
 
     @GetMapping("/{leitorId}/emprestimos")
-    public Page<Emprestimo> getEmprestimosPorLeitorId(@PathVariable int leitorId, String search, boolean devolvido,
+    public ResponseEntity<Page<Emprestimo>> getEmprestimosPorLeitorId(@PathVariable("leitorId") int leitorId,
+            @RequestParam(required = false) String search, @RequestParam(required = false) Integer livroId,
+            @RequestParam(required = false) Boolean devolvido,
             Pageable pageable) {
-        return emprestimoRepository.findByLeitorIdAndSearch(leitorId, search, devolvido, pageable);
+        Page<Emprestimo> emprestimos = emprestimoRepository.findByLeitorIdAndSearch(leitorId, search, livroId,
+                devolvido, pageable);
+        return ResponseEntity.ok(emprestimos);
     }
 
     @GetMapping("/{leitorId}/reservas")
-    public Page<Reserva> getReservasPorLeitorId(@PathVariable int leitorId, String search, StatusReserva status,
+    public ResponseEntity<Page<Reserva>> getReservasPorLeitorId(@PathVariable int leitorId, String search,
+            StatusReserva status,
             Pageable pageable) {
-        return reservaRepository.findByLeitorIdAndSearch(leitorId, search, status, pageable);
+                Page<Reserva> reservas =  reservaRepository.findByLeitorIdAndSearch(leitorId, search, status, pageable);
+                return ResponseEntity.ok(reservas);
     }
 
     @GetMapping("/buscar")

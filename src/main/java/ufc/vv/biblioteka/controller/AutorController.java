@@ -100,8 +100,8 @@ public class AutorController {
     }
 
     @GetMapping("/{id}/livros")
-    public ResponseEntity<Page<Livro>> getLivrosByAutor(@PathVariable int id, Pageable pageable) {
-        Page<Livro> livros = livroRepository.findByAutoresId(id, pageable);
+    public ResponseEntity<Page<Livro>> getLivrosByAutor(@PathVariable("id") int idAutor, @RequestParam String search, @RequestParam(required=false) Integer idColecao, Pageable pageable) {
+        Page<Livro> livros = livroRepository.findByAllFields(search, idColecao, idAutor, pageable);
         return ResponseEntity.ok(livros);
     }
 }

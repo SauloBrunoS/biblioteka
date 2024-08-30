@@ -28,7 +28,7 @@ public class LeitorService {
 
     @Transactional
     public Leitor criarLeitor(Leitor leitor) {
-        validarLeitor(leitor);
+        validarLeitorAoCadastrar(leitor);
 
         if (usuarioRepository.existsByEmail(leitor.getUsuario().getEmail())) {
             throw new DuplicateKeyException("Um usuário com este e-mail já está cadastrado.");
@@ -40,10 +40,6 @@ public class LeitorService {
 
         Usuario usuario = leitor.getUsuario();
         usuario.setTipoUsuario(TipoUsuario.LEITOR);
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
-
-        leitor.getUsuario().setId(usuarioSalvo.getId());
-
         return leitorRepository.save(leitor);
     }
 
@@ -51,13 +47,11 @@ public class LeitorService {
         Leitor leitorExistente = leitorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Leitor não encontrado"));
 
-        validarLeitor(leitorAtualizado);
+        validarLeitorAoEditar(leitorAtualizado);
 
         leitorExistente.setNomeCompleto(leitorAtualizado.getNomeCompleto());
-        leitorExistente.setEndereco(leitorAtualizado.getEndereco());
         leitorExistente.setTelefone(leitorAtualizado.getTelefone());
         leitorExistente.getUsuario().setEmail(leitorAtualizado.getUsuario().getEmail());
-        leitorExistente.getUsuario().setSenha(leitorAtualizado.getUsuario().getSenha());
 
         return leitorRepository.save(leitorExistente);
     }
@@ -74,14 +68,23 @@ public class LeitorService {
         leitorRepository.delete(leitor);
     }
 
-    private void validarLeitor(Leitor leitor) {
+    private void validarLeitorAoCadastrar(Leitor leitor) {
         if (leitor.getNomeCompleto() == null || leitor.getNomeCompleto().isEmpty() ||
-                leitor.getEndereco() == null || leitor.getEndereco().isEmpty() ||
                 leitor.getTelefone() == null || leitor.getTelefone().isEmpty() ||
                 leitor.getCpf() == null || leitor.getCpf().isEmpty() ||
                 leitor.getUsuario() == null || leitor.getUsuario().getEmail() == null
                 || leitor.getUsuario().getEmail().isEmpty() || leitor.getUsuario().getSenha() == null
                 || leitor.getUsuario().getSenha().isEmpty()) {
+            throw new IllegalArgumentException("Todos os campos obrigatórios devem ser preenchidos.");
+        }
+    }
+
+    private void validarLeitorAoEditar(Leitor leitor) {
+        if (leitor.getNomeCompleto() == null || leitor.getNomeCompleto().isEmpty() ||
+                leitor.getTelefone() == null || leitor.getTelefone().isEmpty() ||
+                leitor.getCpf() == null || leitor.getCpf().isEmpty() ||
+                leitor.getUsuario() == null || leitor.getUsuario().getEmail() == null
+                || leitor.getUsuario().getEmail().isEmpty()) {
             throw new IllegalArgumentException("Todos os campos obrigatórios devem ser preenchidos.");
         }
     }

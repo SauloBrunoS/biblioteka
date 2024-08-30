@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.voodoodyne.jackson.jsog.JSOGGenerator;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -55,6 +57,11 @@ public class Emprestimo {
 
     private double multa;
 
+    private double valorTotal;
+
+    @OneToOne(mappedBy = "emprestimo", cascade = CascadeType.PERSIST)
+    private Reserva reserva;
+
     public void setDataDevolucao(LocalDate dataDevolucao) {
         if (dataDevolucao == null)
             throw new IllegalArgumentException("Data não pode ser nula");
@@ -65,7 +72,8 @@ public class Emprestimo {
     }
 
     public double calcularValorTotal() {
-        return EmprestimoUtils.calcularValorTotal(valorBase, multa);
+        this.valorTotal = EmprestimoUtils.calcularValorTotal(valorBase, multa);
+        return valorTotal;
     }
 
     public void setDataLimite(LocalDate dataAtual) {

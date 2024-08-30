@@ -15,7 +15,6 @@ public interface LeitorRepository extends JpaRepository<Leitor, Integer> {
     @Query("SELECT l FROM Leitor l WHERE " +
             "(:search IS NULL OR " +
             "l.nomeCompleto iLIKE '%'||:search||'%' OR " +
-            "l.endereco iLIKE '%'||:search||'%' OR " +
             "l.cpf iLIKE '%'||:search||'%' OR " +
             "l.telefone iLIKE '%'||:search||'%' OR " +
             "l.usuario.email iLIKE '%'||:search||'%')")

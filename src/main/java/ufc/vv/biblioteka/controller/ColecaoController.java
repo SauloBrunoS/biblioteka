@@ -99,10 +99,8 @@ public class ColecaoController {
 
     @GetMapping("{id}/livros")
     public ResponseEntity<Page<Livro>> buscarLivrosPorColecaoId(@PathVariable("id") int idColecao,
-            @RequestParam String search, Pageable pageable) {
-        Colecao colecao = colecaoRepository.findById(idColecao)
-                .orElseThrow(() -> new EntityNotFoundException("Coleção não encontrada"));
-        Page<Livro> livros = livroRepository.findByAllFields(search, colecao, pageable);
+            @RequestParam String search, @RequestParam(required=false) Integer idAutor, Pageable pageable) {
+        Page<Livro> livros = livroRepository.findByAllFields(search, idColecao, idAutor, pageable);
         return ResponseEntity.ok(livros);
     }
 }

@@ -1,7 +1,7 @@
 package ufc.vv.biblioteka.model;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.voodoodyne.jackson.jsog.JSOGGenerator;
 
 import jakarta.persistence.Entity;
@@ -22,7 +22,7 @@ public class Usuario {
 
     private String email;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String senha;
 
     private TipoUsuario tipoUsuario;

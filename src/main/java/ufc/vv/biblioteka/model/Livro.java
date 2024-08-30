@@ -8,7 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
@@ -38,21 +37,14 @@ public class Livro {
     @NotBlank
     private String titulo;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(name = "livro_autor", joinColumns = @JoinColumn(name = "livro_id"), inverseJoinColumns = @JoinColumn(name = "autor_id"))
     private List<Autor> autores;
-
-    @Lob
-    private byte[] capa;
 
     @Column(unique = true)
     @NotNull
     @NotBlank
     private String isbn;
-
-    @NotNull
-    @NotBlank
-    private String sinopse;
 
     @NotNull
     @DateTimeFormat(pattern = "dd/MM/yyyy")
@@ -70,7 +62,7 @@ public class Livro {
     @OneToMany(mappedBy = "livro", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
     private List<Reserva> reservas;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(name = "livro_colecao", joinColumns = @JoinColumn(name = "livro_id"), inverseJoinColumns = @JoinColumn(name = "colecao_id"))
     private List<Colecao> colecoes;
 

@@ -1,6 +1,9 @@
 package ufc.vv.biblioteka.repository;
 
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +23,7 @@ public interface ColecaoRepository extends JpaRepository<Colecao, Integer> {
                         Pageable pageable);
 
         boolean existsByNome(String nome);
+
+        @Query("SELECT c FROM Colecao c WHERE c.nome ILIKE '%'||:search||'%'")
+        List<Colecao> findAllWithFilter(@Param("search") String search);
 }

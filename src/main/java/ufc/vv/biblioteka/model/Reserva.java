@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import jakarta.persistence.JoinColumn;
@@ -47,6 +48,10 @@ public class Reserva {
     @Enumerated(EnumType.STRING)
     @NotNull
     private StatusReserva status;
+
+    @OneToOne
+    @JoinColumn(name = "emprestimo_id")
+    private Emprestimo emprestimo;
 
     public void marcarComoEmAndamento() {
         this.status = StatusReserva.EM_ANDAMENTO;

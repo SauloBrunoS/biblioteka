@@ -11,6 +11,8 @@ import ufc.vv.biblioteka.model.Nacionalidade;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 @RepositoryRestResource(collectionResourceRel = "autores", path = "autores")
 public interface AutorRepository extends JpaRepository<Autor, Integer> {
         @Query("SELECT a FROM Autor a WHERE " +
@@ -24,5 +26,8 @@ public interface AutorRepository extends JpaRepository<Autor, Integer> {
                         Pageable pageable);
 
         boolean existsByNomeCompleto(String nome);
+
+        @Query("SELECT a FROM Autor a WHERE a.nomeCompleto ILIKE '%'||:search||'%'")
+        List<Autor> findAllWithFilter(@Param("search") String search);
 
 }

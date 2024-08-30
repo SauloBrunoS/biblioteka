@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.persistence.EntityNotFoundException;
-import ufc.vv.biblioteka.model.Colecao;
 import ufc.vv.biblioteka.model.Emprestimo;
 import ufc.vv.biblioteka.model.Livro;
 import ufc.vv.biblioteka.model.Reserva;
@@ -52,7 +51,7 @@ public class LivroController {
             Livro novoLivro = livroService.adicionarLivro(livro);
             return ResponseEntity.ok(novoLivro);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null); // 400 Bad Request
+            return ResponseEntity.badRequest().body(null); 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro inesperado ao criar o livro.");
         }
@@ -98,10 +97,10 @@ public class LivroController {
         }
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<Livro>> buscarLivro(@RequestParam String search, @RequestParam Colecao colecao,
+    @GetMapping("/buscar")
+    public ResponseEntity<Page<Livro>> buscarLivro(@RequestParam String search, @RequestParam(required=false) Integer colecaoId, Integer autorId,
             Pageable pageable) {
-        Page<Livro> livros = livroRepository.findByAllFields(search, colecao, pageable);
+        Page<Livro> livros = livroRepository.findByAllFields(search, colecaoId, autorId, pageable);
         return ResponseEntity.ok(livros);
     }
 

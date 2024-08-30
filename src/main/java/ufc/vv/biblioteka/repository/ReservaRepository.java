@@ -40,5 +40,5 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
                         Pageable pageable);
 
         List<Reserva> findByStatusAndDataLimite(StatusReserva status, LocalDate dataLimite);
-
 }
+

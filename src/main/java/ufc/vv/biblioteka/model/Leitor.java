@@ -36,10 +36,6 @@ public class Leitor {
 
     @NotNull
     @NotBlank
-    private String endereco;
-
-    @NotNull
-    @NotBlank
     private String telefone;
 
     @NotNull
@@ -77,7 +73,7 @@ public class Leitor {
         if (reservas == null)
             throw new IllegalStateException("Lista de reservas não pode ser nula");
         return (int) this.reservas.stream()
-                .filter(reserva -> reserva.getStatus() == StatusReserva.EM_ANDAMENTO)
+                .filter(reserva -> reserva.getStatus() == StatusReserva.EM_ANDAMENTO || reserva.getStatus() == StatusReserva.EM_ESPERA)
                 .count();
     }
 
